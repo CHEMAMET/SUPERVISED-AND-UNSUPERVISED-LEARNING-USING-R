@@ -1,0 +1,305 @@
+---
+title: "RPROGRAMMING(EDA)"
+author: "CHEROTICH FAITH"
+date: '2022-05-27'
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###INTRODUCTION
+
+##DEFINING THE RESEARCH QUESTION
+
+Identify individuals who are more likely to click on the Ads posted on her blog
+
+##METRIC OF SUCCESS
+
+our analysis will be considered a success if we successfully identify the features of the users who click on the adverts
+
+##UNDERSTANDING THE CONTEXT
+
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She would now like to employ your services as a Data Science Consultant to help her identify which individuals are most likely to click on her ads. 
+
+##EXPERIMENTAL DESIGN
+
+Define the question, the metric for success, the context, experimental design taken and the 
+appropriateness of the available data to answer the given question
+Find and deal with outliers, anomalies, and missing data within the dataset.
+Perform univariate and bivariate analysis recording your observations.
+Implement the solution by performing the respective analysis i.e. factor analysis, principal 
+component analysis, and discriminant analysis.
+Challenge your solution by providing insights on how you can make improvements.
+
+##APPROPRIATNESS OF THE AVAILABLE DATA
+
+We shall check the appropriateness of the data by analysing:
+
+whether the data given is accurate
+
+whether the dataset is sufficient to fully address the problem identified
+
+whether the dataset is balanced or imbalanced
+
+#Loading the dataset
+```{r}
+ads <- read.csv("advertising.csv")
+#let's preview the first 6 rows of the dataset
+head(ads)
+
+```
+##UNDERSTANDING THE DATASET
+```{r}
+#the data types of the dataset
+str(ads)
+```
+From the output, we can see that our dataset has 1000rows and 10 columns
+```{r}
+#previewing the summary of the dataset
+summary(ads)
+```
+##DATA CLEANING
+#Checking for Missing Values
+```{r}
+#let's check for missing values in each columns using the ColSums()function
+
+colSums(is.na(ads))
+```
+Our output reveals that there are no missing values in our dataset.
+
+##Checking for duplicated variables
+```{r}
+#using the duplicated()function to check for duplicated values
+duplicated_values <- ads[duplicated(ads),]
+duplicated_values
+```
+There are no duplicated rows
+
+##EXPLORATORY DATA ANALYSIS
+#Univariate Analysis
+```{r}
+#Using mean 
+#Daily time spent on site
+mean(ads$Daily.Time.Spent.on.Site)
+```
+The average time spent on site daily is 65minutes
+
+```{r}
+#Daily internet usage
+mean(ads$Daily.Internet.Usage)
+```
+The mean daily internet usage is 180 minutes
+```{r}
+#average age of the people
+mean(ads$Age)
+```
+Most of the people in the dataset are 36years
+
+##Using Frequency table to visualize gender
+```{r}
+Gender <- ads$Male
+Gender_frequency <- table(Gender)
+barplot(Gender_frequency, col="Magenta")
+```
+There are more females than males(0-Females, 1-Males)
+
+```{r}
+Time_spent <- ads$Daily.Time.Spent.on.Site
+clicks <- ads$Clicked.on.Ad
+par(mfrow=c(2,2))
+hist(Time_spent,xlab='Daily time spent on the site', main='Daily Time Spent on the site')
+boxplot(Time_spent,xlab='Daily time spent on the site', horizontal=TRUE)
+hist(clicks, xlab='Clicks on the ad', ylab='frequency', main='Clicks on the Ad')
+boxplot(clicks, xlab='Clicks on the ad', ylab='frequency', horizontal=TRUE)
+
+```
+With a maximum of 90 minutes,the average time spent daily on the site is 65 minutes.
+As displayed in the output, the number of people who clicked on the ads is equal to those who did not click.
+
+```{r}
+#Checking distribution of Area Income
+income <-ads$Area.Income
+par(mfrow=c(2,2))
+hist(income, main='Area Income Distribution',xlab='Area',col='Maroon')
+
+boxplot(income,xlab = 'Area Income', horizontal=TRUE)
+
+```
+
+The area income is skewed to the right.The boxplot displays presence of outliers which we shall not drop for now, this is because different countries have different income levels.
+ 
+```{r}
+Internet<- ads$Daily.Internet.Usage
+par(mfrow=c(2,2))
+hist(Internet, xlab = 'Time in Minutes', ylab = 'frequency',main = 'Daily internet usage')
+```
+The output displays that there is no skeweness in Daily Internet Usage
+
+##Bivariate Analysis
+#Checking for covariance
+This measures how two variables defer from each other
+```{r}
+#let's first check the relationship between daily time spent on usage vs the daily internet usage
+Time_spent <- ads$Daily.Time.Spent.on.Site
+Internet <- ads$Daily.Internet.Usage
+cov(Time_spent,Internet)
+```
+The output displays a high covariance which means that there is a strong relationship between Daily time spent on the site and Daily internet usage. Since our covariance is 360.9919, it means our variables are positively related.
+
+#Checking for Correlation
+This measures the strength of the relationship between two variables and the direction of the relationship.
+```{r}
+Time_spent <- ads$Daily.Time.Spent.on.Site
+Internet <- ads$Daily.Internet.Usage
+cor(Time_spent,Internet)
+```
+The output displays that Daily time spent on site and daily internet usage are fairly correlated as they have a correlation of 0.518
+
+#Pairplot(Histograms)
+```{r}
+library(ggplot2)
+options(repr.plot.width = 13, repr.plot.height = 7)
+ggplot(data = ads, aes(x = Age, fill = Clicked.on.Ad))+
+ geom_histogram(bins = 35, color = 'Magenta') +
+ labs(title = 'Age distribution', x = 'Age', y = 'Frequency', fill = 'Clicked on ad') +
+ scale_color_brewer(palette = 'Set1') +
+ theme(plot.title = element_text(size = 18, face = 'bold', color = 'purple'),
+ axis.title.x = element_text(size = 15, face = 'bold', color = 'purple'),
+ axis.title.y = element_text(size = 15, face = 'bold', color = 'purple'),
+ axis.text.x = element_text(size = 13, angle = 0),
+ axis.text.y = element_text(size = 13),
+ legend.title = element_text(size = 13, color = 'purple'),
+ legend.text = element_text(size = 12))
+```
+
+#Scatterplot
+```{r}
+Time_spent <- ads$Daily.Time.Spent.on.Site
+Internet<- ads$Daily.Internet.Usage
+plot(Time_spent, Internet, xlab="Daily time spent on site", ylab="Daily Internet Usage")
+
+```
+
+```{r}
+plot(Area.Income ~ Daily.Internet.Usage, data = ads)
+```
+
+#
+```{r}
+frequency_ads = table(ads$Clicked.on.Ad)
+frequency_ads
+
+# Barplot for clicked on ad variable.
+#
+bar_ads = barplot(frequency_ads, main = 'clicked on ad_frequency',
+ xlab = 'Gender', ylab = 'Count', col = 'green')
+```
+There is a balance between the male and female who click on ads.
+```{r}
+ggplot(data = ads) +
+ geom_point(mapping = aes(x = Daily.Internet.Usage , y= Age, fill = Male, colour = Male))
+
+```
+Age does not affect the likelihood of one clicking the ads.
+
+
+#Multivariate Analysis
+
+#Using a correlation plot
+```{r}
+sub_data <- c('Clicked.on.Ad', 'Male', 'Age', 'Area.Income',
+'Daily.Internet.Usage', 'Daily.Time.Spent.on.Site')
+num <- ads[,sub_data]
+num_cor <- cor(num)
+library(corrplot)
+corrplot(num_cor)
+
+```
+
+1. Daily Internet Usage and Daily Time spent on site have a strong negative correlation to clicking the ads. This means that people who spend less time spent on the internet are more likely to click on the ads.
+
+2. The gender of one has no correlation to the likelihood of one clicking on the ads
+
+3. Area.Income has a weak positive correlation with clicked.on.ad, this means that the higher the levels of Area.Income, the higher the chances of one clicking the ads.
+
+***MODELING***
+
+**1. Using Class method**
+```{r}
+library(rpart)
+```
+
+```{r}
+#using decision trees
+#fit the model
+#specify the target and predictor variables
+m <- rpart(Clicked.on.Ad ~ . , 
+      data=ads,
+      method="class")
+```
+
+```{r}
+#install.packages('rpart.plot')
+```
+```{r}
+library("rpart.plot")
+
+#plot the decision tree model
+rpart.plot(m)
+```
+```{r}
+#making predictions, the confusion matrix
+
+pred <- predict(m, ads, type="class")
+table(pred, ads$Clicked.on.Ad)
+```
+```{r}
+#the confusion matrix
+mean(ads$Clicked.on.Ad==pred)
+```
+Our model accuracy is 100%, which is a good prediction.
+However, we shall challenge this prediction to by use of random forest to see whether it's correct.
+
+***Challenging the Solution***
+
+*Random Forest Classifier*
+
+```{r}
+#install.packages("lattice")
+```
+```{r}
+#install.packages("ggplot2")
+```
+```{r}
+library(caret)
+```
+
+```{r}
+#let's train our model
+#set.seed(12)
+#model <- train(Clicked.on.Ad ~ . ,
+            #   data=ads, 
+               #method="ranger")
+```
+```{r}
+#let's print out the model
+#print(model)
+```
+
+```{r}
+#plot(model)
+```
+
+**Conclusion**
+
+Decision trees remain to be our best model prediction as proven by the Random Forest Classifier with an accuracy of 98%.
+
+
+
+
+

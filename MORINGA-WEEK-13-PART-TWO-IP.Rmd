@@ -1,0 +1,631 @@
+---
+title: "MORINGA WEEK 13IP"
+author: "CHEROTICH FAITH"
+date: '2022-06-05'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+**1. INTRODUCTION**
+
+
+**Defining the Research Question**
+
+
+Kira Plastinina is a Russian brand that is sold through a defunct chain of retail stores in Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia. The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
+
+***Specifying the Research Question***
+
+
+1. Perform clustering stating insights drawn from your analysis and visualizations.
+
+2. Upon implementation, provide comparisons between the approaches learned this week i.e. K-Means clustering vs Hierarchical clustering highlighting the strengths and limitations of each approach in the context of your analysis. 
+
+**Defining the Metric of success**
+
+
+Our project will be considered a success if it can successfully identify the characteristics of customer groups which will help inform the team in formulating the marketing and sales strategies of the brand.
+
+**Understanding the Context**
+
+
+Online shopping is a form of electronic commerce which allows consumers to directly buy goods or services from a seller over the Internet using a web browser or a mobile app. Consumers find a product of interest by visiting the website of the retailer directly or by searching among alternative vendors using a shopping search engine, which displays the same product's availability and pricing at different e-retailers. As of 2020, customers can shop online using a range of different computers and devices, including desktop computers, laptops, tablet computers and smartphones. A typical online store enables the customer to browse the firm's range of products and services, view photos or images of the products, along with information about the product specifications, features and prices. Online stores usually enable shoppers to use "search" features to find specific models, brands or items.
+
+**Recording the Experimental Design**
+
+1. Problem Definition
+
+2. Data Sourcing
+
+3. Check the Data
+
+4. Perform Data Cleaning
+
+5.Perform Exploratory Data Analysis (Univariate, Bivariate & Multivariate)
+
+6. Implement the Solution
+
+7. Challenge the Solution
+
+8. Follow up Questions
+
+***DATASET DESCRIPTION***
+
+
+The dataset consists of 10 numerical and 8 categorical attributes. The 'Revenue' attribute can be used as the class label.
+
+"Administrative", "Administrative Duration", "Informational", "Informational Duration", "Product Related" and "Product Related Duration" represents the number of different types of pages visited by the visitor in that session and total time spent in each of these page categories. The values of these features are derived from the URL information of the pages visited by the user and updated in real-time when a user takes an action, e.g. moving from one page to another. 
+
+The "Bounce Rate", "Exit Rate" and "Page Value" features represent the metrics measured by "Google Analytics" for each page in the e-commerce site. 
+
+The value of the "Bounce Rate" feature for a web page refers to the percentage of visitors who enter the site from that page and then leave ("bounce") without triggering any other requests to the analytics server during that session. 
+
+The value of the "Exit Rate" feature for a specific web page is calculated as for all pageviews to the page, the percentage that was the last in the session.
+
+The "Page Value" feature represents the average value for a web page that a user visited before completing an e-commerce transaction. 
+
+The "Special Day" feature indicates the closeness of the site visiting time to a specific special day (e.g. Mother’s Day, Valentine's Day) in which the sessions are more likely to be finalized with the transaction. The value of this attribute is determined by considering the dynamics of e-commerce such as the duration between the order date and delivery date. For example, for Valentina’s day, this value takes a nonzero value between February 2 and February 12, zero before and after this date unless it is close to another special day, and its maximum value of 1 on February 8. 
+
+The dataset also includes the operating system, browser, region, traffic type, visitor type as returning or new visitor, a Boolean value indicating whether the date of the visit is weekend, and month of the year.
+
+
+***2. DATA UNDERSTANDING***
+
+***Reading the Data***
+
+```{r}
+#loading the online shoppers dataset
+
+setwd("C:/Users/user/Downloads/")
+
+#reading the dataset
+data <- read.csv("shoppers.csv")
+
+#preview the top 6 variables of our dataset
+head(data)
+
+```
+
+
+***Checking the Data***
+```{r}
+#let's preview the number of rows and columns in our dataset using the dimension function, dim()
+
+dim(data)
+```
+
+There are 12,330 rows with 18 columns in our online shoppers dataset.
+
+```{r}
+#checking the data types of the dataset
+str(data)
+```
+We can see that variables in our dataset have the appropriate datatype. Therefore, we proceed with our analysis.
+
+***DATA CLEANING***
+
+*Checking for Missing Values*
+```{r}
+#Let's check for missing values in each column using the ColSums()function
+colSums(is.na(data))
+
+#hence print the sum of missing values
+sum(is.na(data))
+
+```
+There are 112 missing values in our dataset
+```{r}
+#we handle the missing values by ommiting them using the na.omit()function
+
+shoppers <- na.omit(data)
+
+#then previewing to see if any is left
+sum(is.na(shoppers))
+```
+Our dataset has many variables and deleting the missing values will not affect our analysis
+
+**Checking for Duplicates**
+```{r}
+#we use the duplicated()function to check for duplicated values in our dataset
+duplicated_values <- data[duplicated(shoppers),]
+duplicated_values
+
+#hence we print the sum of our duplicates
+sum(duplicated(data))
+```
+There are 119 duplicated values in our dataset.
+Therefore we remove them since they affect model accuracy.
+```{r}
+#removing duplicates
+
+data <- shoppers[!duplicated(shoppers),]
+
+#hence print the sum to check if any duplicated data is left
+sum(duplicated(data))
+```
+we have dropped the duplicated values
+
+**Checking for Outliers**
+```{r}
+#checking for outliers in all the numerical variables of our dataset and visualizing them using the boxplot
+#let's first get the data types
+sapply(shoppers, class)
+```
+
+```{r}
+#plotting boxplots for the numerical variables
+
+par(mfrow=c(2,2))
+boxplot((shoppers$`Administrative`),horizontal=TRUE, col='Magenta', main="Administrative")
+boxplot((shoppers$`Administrative_Duration`), horizontal =TRUE, col='orange', main="Admin Duration")
+boxplot((shoppers$`Informational`),horizontal= TRUE, col='green', main="Informational")
+boxplot((shoppers$`Informational_Duration`),horizontal=TRUE, col='blue', main=" Info duration")
+boxplot((shoppers$`ProductRelated`),horizontal=TRUE,col='brown', main="Product related")
+boxplot((shoppers$`ProductRelated_Duration`),horizontal=TRUE,col='yellow', main="Product related Duration")
+boxplot((shoppers$`BounceRates`),horizontal=TRUE,col='maroon', main="Bounce rates")
+boxplot((shoppers$`ExitRates`),horizontal=TRUE,col='blue', main="Exit rates")
+boxplot((shoppers$PageValues),horizontal=TRUE,col='purple', main="Page values")
+boxplot((shoppers$ OperatingSystems),horizontal=TRUE,col='Magenta', main="Operating System")
+boxplot((shoppers$Browser),horizontal=TRUE,col='pink', main="Browser")
+boxplot((shoppers$Region),horizontal=TRUE,col='Purple', main="Region")
+boxplot((shoppers$TrafficType ),horizontal=TRUE,col='green', main="Type of Traffic")
+```
+a. There are outliers in the Administrative and administrative duration column which we shall not remove because it is usual for the owner of the page to visit their page or not necessarily visit depending on their customers order.
+
+b. The Informational and Informational Duration columns also have outliers
+
+c. Product related and product related duration columns have outliers since products vary with different customer needs at different times.
+
+d. The bounce rates column also have outliers as they fluctuate since customer visits vary because the percentage of visitors who  enter the site from that page and then leave ("bounce") without triggering any other requests to the analytics server during that session.
+
+e. The exit rates has oultiers as well because exit rates differ as different visitors visit the website and each would exit differently since the exit rates are calculated as for all pageviews to the page, the percentage that was the last in the session.
+
+f. The page value also has outliers. This variable represents the average value for a web page that a user visited before completing an e-commerce transaction. It means that there is a fluctuation of when visits occur.
+
+g. The operating system also have outliers, this is because different visitors access the website using different operating systems
+
+h. The browser has ouliers since the website can be accessed on any browser at any time
+
+i. Region. There are site visists by visitors from different regions who wants to order the products
+
+j. Traffic type has outliers as well.
+
+**Point to note:**We shall not remove the above outliers because they will affect most of the data in our dataset.
+
+
+***EXPLORATORY DATA ANALYSIS***
+
+*Univariate Analysis*
+```{r}
+#First, let's preview the summary of our dataset
+summary(shoppers)
+```
+*Administrative_Duration*
+```{r}
+#Using mean() to calculate the average time on administrative page
+print(mean(shoppers$Administrative_Duration))
+
+#visualize this distribution using a histogram
+hist(shoppers$Administrative_Duration, main = "Administrative Duration", xlab = "Time in Minutes", col = "Magenta")
+```
+The average time spent on adminstrative pages is 80.90minutes
+
+From the histogram we can also see that most people spent less than 500minutes on the administrative page. The high frequency of zero means that not many people spent time on the page
+
+*Informational_Duration*
+```{r}
+#Let's compute the mean of the time spent on the information page and visualize it using the histogram
+
+print(mean(shoppers$Informational_Duration))
+hist(shoppers$Informational_Duration, main = "Informational duration", xlab = "Time in Minutes", col = "Maroon")
+```
+The average time spent on information site is 34.50 minutes. The highest frequency is negative because of the presence of outliers which we shall deal with them during modeling.
+
+*Product Related_Duration*
+```{r}
+#let's calculate the average time spent on product related views and visualize it
+print(mean(shoppers$ProductRelated_Duration))
+
+hist(shoppers$ProductRelated_Duration, main = "ProductRelated_Duration", xlab = "Time in Minutes", col = "purple")
+```
+*Product Related*
+```{r}
+#we visualize the product related views
+Products <- shoppers$ProductRelated
+Products_freq <- table(Products)
+barplot(Products_freq, main = "Product Related", xlab = "Product views")
+```
+The views decreased with increase in time meaning that people only only visit the site to view the product they want.
+
+*Bounce Rate*
+```{r}
+#computing the average bounce rate and the maximum bounce rate of the website
+print(mean(shoppers$BounceRates))
+print(max(shoppers$BounceRates))
+
+#Using a histogram to visualize this variable
+
+hist(shoppers$ExitRates, main = "Bounce Rate Duration", xlab = "Bounce rate ", col = "red")
+```
+The maximum bounce rate is 20% since it is calculated in percentage with an average of 2%. From the plot, we can see that there was an equal distribution across all pages with not so high frequency.
+
+*Exit Rates*
+```{r}
+#let's compute the average percentage of exit rate and the maximum percentage
+print(mean(shoppers$ExitRates))
+print(max(shoppers$ExitRates))
+
+#let's visualize the variable in an histogram
+hist(shoppers$ExitRates, main = "ExitRate Duration", xlab = "Exit rate ", col = "Brown")
+```
+The average rate of exit per visitors on the different pages is 4% with a maximum percentage of 20%.The plot also displays a distribution across all pages and high between 0.00 to around 0.05
+
+*Page Value*
+```{r}
+#let's compute the mean of the page value
+
+print(mean(shoppers$PageValues))
+
+#we also visualize the variable
+
+hist(shoppers$PageValues, main = "Pagevalue distribution", xlab = "Page value", col = "pink")
+```
+The average page value before a customer completes transaction is 5.89.
+
+*Special Day*
+```{r}
+#we compute the unique day in which most visits are high on the website
+unique(shoppers$SpecialDay)
+
+#plot a frequency table to show the distribution of visits
+Special_day <- shoppers$SpecialDay
+special_freq <- table(Special_day)
+barplot(special_freq, main = "SpecialDay", xlab = "Unique special day")
+```
+From the output we can see that most visits to the website were not on special days .
+
+*Month*
+```{r}
+#let's compute the unique month in which most visitors visit the website
+
+unique(shoppers$Month)
+
+#then visualize
+Month_data <- shoppers$Month
+months_freq <- table(Month_data)
+barplot(months_freq, main = "Month", xlab = "Months in a year")
+```
+We can see that May had the highest visits, followed by November, March and lastly December. 
+
+*Browser*
+```{r}
+#let's comput the unique browser with most visists
+unique(shoppers$Browser)
+
+#we then visualize the variable
+Browsers <- shoppers$Browser
+browsers_freq <- table(Browsers)
+barplot(browsers_freq, main = "Browser", xlab = "Browser visits",col="Maroon")
+
+```
+There were 13 different browsers used.
+Most people used type 1 and type 2 browsers with type 2 having the highest visitor usage.
+
+*Region*
+```{r}
+#let's compute the unique region with most visitors
+unique(shoppers$Region)
+
+#then visualize
+Regions <- shoppers$Region
+region_freq <- table(Regions)
+barplot(region_freq, main = "Region distribution", xlab = "Region",col="Brown")
+```
+There 9 different regions with most visitors being from region 1.
+
+*Traffic Type*
+```{r}
+#compute the unique traffic type of the visitors
+unique(shoppers$TrafficType)
+
+#then visualize the distribution
+Traffic_type <- shoppers$TrafficType
+traffictypes_freq <- table(Traffic_type )
+barplot(traffictypes_freq, main = "Traffic Types distribution", xlab = "Traffic Types")
+
+```
+There are 20 different types of visitors traffic to the websites.
+Traffic type 2 had the highest number of visitors.
+
+*Visitors type*
+```{r}
+#compute the unique type of visitors to the website
+
+unique(shoppers$VisitorType)
+
+#then visualize the distribution of these visitors
+Visitors_type <- shoppers$VisitorType
+visitorstypes_freq <- table(Visitors_type)
+barplot(visitorstypes_freq, main = "Visitors' Type distribution", xlab = "Type of Visitors", col="Magenta")
+```
+There are three classes of the visitors to the website; Returning visitor, the new visitors and the other column
+From the plot we can see that the Returning visitor are the highest to frequently visit the website, means that they enjoyed the services and the products.
+
+*Weekend*
+```{r}
+#let's compute to see if there are more visits duing the weekend or not
+unique(shoppers$Weekend)
+
+#then visualize the distribution
+weekends <- shoppers$Weekend
+weekend_freq <- table(weekends)
+barplot(weekend_freq, main = "Weekend visits distribution", xlab = "Weekend",col="Purple")
+```
+We can see most visits to the website did not occur during the weekend, only about 3000 visitors visited the page during the weekend with more than 8,000 visiting during other days
+
+*Revenue*
+```{r}
+#let's compute the unique revenue collected during visits to the site
+unique(shoppers$Revenue)
+
+#we then visualize this distribution
+revenue <- shoppers$Revenue
+revenue_freq <- table(revenue)
+barplot(revenue_freq, main = "Revenue distribution", xlab = "Revenue",col="green")
+```
+The output displays that most visits did not contribute to much revenue for the company.
+
+**Bivariate Analysis**
+
+*Using the correlation matrix*
+```{r}
+#let's generate a correlation matrix for the numerical variables
+online_shoppers <- shoppers[,-c(0,2,4,10,11,12,13,14,15,16,17)]
+res <- cor(online_shoppers)
+round(res,2)
+
+```
+There is a high positive correlation between the Bounce rates and exit rates of 0.90
+
+*Using pairplots*
+```{r}
+library(psych)
+par(mfrow=c(2,2))
+pairs.panels(shoppers[,c(0,2,4,10,11,12,13,14,15,16,17)])
+```
+We can observe that there is a positive correlation between bounce rate and exit rate where;as exit rates increase, the bounce rates also increase.
+
+**Multivariate Analysis**
+```{r}
+#install.packages("corrplot")
+#install.packages("ggcorrplot")
+library(ggcorrplot)
+library(dplyr)
+shoppers %>%
+    select_if(is.numeric) %>%
+    cor %>% 
+    ggcorrplot()
+```
+
+
+***Implementing the Solution***
+
+**K-Means Clustering**
+```{r}
+#let's first preview the dataset
+head(shoppers)
+```
+
+
+```{r}
+#Preparin our dataset through encoding
+#converting the categorical variables to numeric
+shoppers$SpecialDay_new <- as.numeric(as.factor(shoppers$SpecialDay))
+shoppers$Month_new <- as.numeric(as.factor(shoppers$Month))
+shoppers$OperatingSystems_new <- as.numeric(as.factor(shoppers$OperatingSystems))
+shoppers$Browser_new <- as.numeric(as.factor(shoppers$Browser))
+shoppers$Region_new <- as.numeric(as.factor(shoppers$Region))
+shoppers$TrafficType_new <- as.numeric(as.factor(shoppers$TrafficType))
+shoppers$VisitorType_new <- as.numeric(as.factor(shoppers$VisitorType))
+shoppers$Weekend_new <- as.numeric(as.factor(shoppers$Weekend))
+shoppers$Revenue_new <- as.numeric(as.factor(shoppers$Revenue))
+head(shoppers)
+```
+
+**Normalization**
+```{r}
+#This involves reorganizing our data so that there is no redundancy of our data and to make sure that there is no negative impact during clustering
+normalize <- function(x){
+  return ((x-min(x)) / (max(x)-min(x)))
+}
+shoppers$Administrative<- normalize(shoppers$Administrative)
+shoppers$Administrative_Duration<- normalize(shoppers$Administrative_Duration)
+shoppers$Informational<- normalize(shoppers$Informational)
+shoppers$Informational_Duration<- normalize(shoppers$Informational_Duration)
+shoppers$ProductRelated<- normalize(shoppers$ProductRelated)
+shoppers$ProductRelated_Duration<- normalize(shoppers$ProductRelated_Duration)
+shoppers$BounceRates<- normalize(shoppers$BounceRates)
+shoppers$ExitRates<- normalize(shoppers$ExitRates)
+shoppers$PageValues<- normalize(shoppers$PageValues)
+shoppers$SpecialDay_new<- normalize(shoppers$SpecialDay_new)
+shoppers$Month_new<- normalize(shoppers$Month_new)
+shoppers$OperatingSystems_new<- normalize(shoppers$OperatingSystems_new)
+shoppers$Browser_new<- normalize(shoppers$Browser_new)
+shoppers$Region_new<- normalize(shoppers$Region_new)
+shoppers$TrafficType_new<- normalize(shoppers$TrafficType_new)
+shoppers$VisitorType_new<- normalize(shoppers$VisitorType_new)
+shoppers$Weekend_new<- normalize(shoppers$Weekend_new)
+shoppers$Revenue_new<- normalize(shoppers$Revenue_new)
+
+head(shoppers)
+```
+Our data is now normalized, we can proceed with our modeling.
+
+```{r}
+shoppers_new<- shoppers[, c(1, 2, 3, 4, 5, 6, 7, 8, 9,19,20,21,22,23,24,25,26,27)]
+colnames(shoppers_new)
+```
+```{r}
+#Applying the K-Means clustering with the number of centroids(k)=3
+#starting seed=100
+set.seed(123)
+#
+shoppers_data <- kmeans(shoppers_new,centers=3,nstart=25)
+print(shoppers_data)
+```
+We can see that our cluster sizes are 8042, 1908 and 2366 respectively.
+
+
+**Visualization of the clusters**
+```{r}
+library(cluster)
+#install.packages("factoextra")
+library("factoextra")
+#let's use fviz to plot our clusters
+fviz_cluster(shoppers_data, data=shoppers_new)
+
+```
+
+```{r}
+# Clusters of each datapoint
+shoppers_data$cluster
+
+
+```
+```{r}
+#Showing the cluster centres of each variable per cluster
+shoppers_data$centers
+```
+
+```{r}
+library(gridExtra)
+
+### Visualizing using different Ks to compare by Creating clusters of different numbers
+shoppers_data1 <- kmeans(shoppers_new, centers = 2, nstart = 25)#k=2
+shoppers_data2 <- kmeans(shoppers_new, centers = 3, nstart = 25)#k=3
+shoppers_data3<- kmeans(shoppers_new, centers = 4, nstart = 25)#k=4
+shoppers_data4<- kmeans(shoppers_new, centers = 5, nstart = 25)#k=5
+
+# We then apply the clusters created above and visualize them
+plot1 <- fviz_cluster(shoppers_data1, geom = "point", data = shoppers_new) + ggtitle(" K = 2")
+plot2 <- fviz_cluster(shoppers_data2, geom = "point", data = shoppers_new) + ggtitle(" K = 3")
+plot3 <- fviz_cluster(shoppers_data3, geom = "point", data = shoppers_new) + ggtitle(" K = 4")
+plot4 <- fviz_cluster(shoppers_data4, geom = "point", data = shoppers_new) + ggtitle(" K = 5")
+
+grid.arrange(plot1, plot2, plot3, plot4, nrow = 2)
+```
+There is so much overlapping in grid 4 and 5, hence k=2 and k=3 are the most appropriate to be used in clustering.
+
+**Hierarchical Clustering**
+```{r}
+# We start by computing some descriptive statistics
+desc_stats <- data.frame(
+  Min = apply(shoppers_new, 2, min),    # minimum
+  Med = apply(shoppers_new, 2, median), # median
+  Mean = apply(shoppers_new, 2, mean),  # mean
+  SD = apply(shoppers_new, 2, sd),      # Standard deviation
+  Max = apply(shoppers_new, 2, max)     # Maximum
+)
+desc_stats <- round(desc_stats, 1)
+head(desc_stats)
+
+```
+
+```{r}
+#scaling data
+data <- scale(shoppers_new)
+head(data)
+```
+```{r}
+#Find the Euclidean distance between observations using the dist() function
+d <- dist(data, method="euclidean")
+
+#then perform hierarchical clustering using the Ward's method
+res.hc <- hclust(d,method="ward.D2")
+
+#we then plot a dendrogram
+plot(res.hc, cex=0.6, hang = 1, main= "Dendrogram of online shoppers")
+```
+The output above displays how our data is clustered, however, it is not clear due to our large dataset.
+
+**CONCLUSION**
+
+From the analysis, K-means is good for visualization of clusters in the dataset but a little disadvantageous as one has to choose the k cluster.
+
+Hierarchical clustering was unable to clearly display the grouped data due to how large our dataset was.
+
+**CHALLENGE THE SOLUTION**
+
+**Using DBSCAN**
+```{r}
+#We start by importing the required package
+#install.packages("dbscan", dependencies = TRUE)
+
+#then load the required library
+library("dbscan")
+```
+
+```{r}
+#dataset encoding
+shoppers_new$SpecialDay_new <- as.numeric(as.factor(shoppers_new$SpecialDay))
+shoppers_new$Month_new <- as.numeric(as.factor(shoppers_new$Month))
+shoppers_new$OperatingSystems_new <- as.numeric(as.factor(shoppers_new$OperatingSystems))
+shoppers_new$Browser_new <- as.numeric(as.factor(shoppers_new$Browser))
+shoppers_new$Region_new <- as.numeric(as.factor(shoppers_new$Region))
+shoppers_new$TrafficType_new <- as.numeric(as.factor(shoppers_new$TrafficType))
+shoppers_new$VisitorType_new <- as.numeric(as.factor(shoppers_new$VisitorType))
+shoppers_new$Weekend_new <- as.numeric(as.factor(shoppers_new$Weekend))
+shoppers_new$Revenue_new <- as.numeric(as.factor(shoppers_new$Revenue))
+head(shoppers_new)
+```
+
+```{r}
+# let's remove the class label 
+
+label1 <- shoppers[, c(1, 2, 3, 4, 5, 6, 7, 8, 9,19,20,21,22,23,24,25,26,27)]
+
+head(label1)
+```
+
+
+
+```{r}
+# Applying our DBSCAN algorithm with minimum points of 4
+# 
+scan<-dbscan(label1,eps=0.4,MinPts=3)
+
+# Printing out the clustering results
+print(scan)
+```
+We got 32clusters and 269 noise points
+```{r}
+#we then plot our clusters
+# 
+hullplot(label1,scan$cluster)
+
+```
+DBCSAN clustrering has more clustering compared to k-means clustering.However, there are noise points which means that there are still outliers in the dataset.
+
+
+**CONCLUSION**
+
+From the analysis, we can conclude that the company's performance is growing quite well though not perfect because despite site visits to its different pages, the revenue made is still low. 
+
+
+**RECOMMENDATION**
+
+
+The company should improve branding and marketing of its products in order to attract more website visits. Increasing its page value would also attract more customer transactions which generates more revenue.
+
+
+
+
+
+
+
+
+
+
+
+
