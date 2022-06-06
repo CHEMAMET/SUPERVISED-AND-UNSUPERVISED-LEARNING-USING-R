@@ -61,7 +61,7 @@ RStudio - IDE
 
 This project is under MIT license
 
-**Acknowledgements
+**Acknowledgements**
 
 I owe my success of this project to:
 1. R community resources
