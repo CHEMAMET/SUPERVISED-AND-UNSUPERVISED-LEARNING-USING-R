@@ -52,3 +52,20 @@ R - Language
 
 RStudio - IDE
 
+**Usage**
+
+1. R programming language has been used in the entire project
+2. Further description of this project and the analysis/modeling can be found on my Rpubs publication
+
+**License**
+
+This project is under MIT license
+
+**Acknowledgements
+
+I owe my success of this project to:
+1. R community resources
+2. DataCamp
+3. Stackoverflow
+4. YouTube tutorials
+
