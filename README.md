@@ -1,5 +1,7 @@
 # SUPERVISED-AND-UNSUPERVISED-LEARNING-USING-R : 
 
+Part one: http://rpubs.com/CHEMAMET/
+
 Part Two: http://rpubs.com/CHEMAMET/
 
 This will contain my project for my understanding on supervised and unsupervised learning using R programming.
