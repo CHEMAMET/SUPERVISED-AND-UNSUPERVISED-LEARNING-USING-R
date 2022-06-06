@@ -1,6 +1,6 @@
 # SUPERVISED-AND-UNSUPERVISED-LEARNING-USING-R : 
 
-Part one: http://rpubs.com/CHEMAMET/
+Part one: http://rpubs.com/CHEMAMET/(I had to comment some codes and functions to allow the knitting of the file, because it was rendering for hours)
 
 Part Two: http://rpubs.com/CHEMAMET/
 
