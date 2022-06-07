@@ -2,8 +2,7 @@
 
 Part one: [http://rpubs.com/CHEMAMET/] (I had to comment some codes and functions to allow the knitting of the file, because it was rendering for hours)
 
-Part Two: http://rpubs.com/CHEMAMET/
-
+Part Two:[ http://rpubs.com/CHEMAMET/]
 This will contain my project for my understanding on supervised and unsupervised learning using R programming.
 
 **OVERVIEW**
